@@ -1,0 +1,1 @@
+assembler.o: ../assembler.c

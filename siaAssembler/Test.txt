@@ -1,0 +1,23 @@
+addimmediate r1 30
+addimmediate r2 67
+addimmediate r3 4
+store r2 r1 0
+add r1 r3 r1
+subtract r2 r2 r2
+addimmediate r2 53
+store r2 r1 0
+add r1 r3 r1
+subtract r2 r2 r2
+addimmediate r2 97
+store r2 r1 0
+add r1 r3 r1
+subtract r2 r2 r2
+addimmediate r2 24
+store r2 r1 0
+add r1 r3 r1
+subtract r2 r2 r2
+subtract r1 r1 r1
+addimmediate r1 30
+load r2 r1 0
+interrupt 0
+iterateover r1 4 4

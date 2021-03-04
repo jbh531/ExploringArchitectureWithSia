@@ -1,0 +1,191 @@
+This file contains several unit tests that will ensure that all 16 instructions of SIA are tested.
+This testing works under these assumptions: All registers start at zero. All code begins in instruction zero. Interrupt 0 prints all of the registers. Interrupt 1 prints all of memory.
+Ideally this testing should be done in the order shown, however if not, at least the AddImmediate and Halt tests should be done first, as other tests will depend on them working.
+* Interrupt 0 is tested in most if not all unit tests, it's mentioned in the first test as the most basic case to check it's own functionality
+
+ARITHMETIC OPERATIONS:
+
+Test: AddImediate with Interrupt 0*
+----------------------------------------------------
+addimmediate r1 126 (91 7E)
+addimmediate r2 1 (92 01)
+interrupt 0 (8000)
+R1 == 126
+R2 == 1
+----------------------------------------------------
+
+Test: Add and Subtract
+----------------------------------------------------
+addimmediate r1 36 (91 24)
+addimmediate r2 9 (92 09)
+add r1 r2 r3 (11 23)
+subtract r1 r2 r4 (51 24)
+interrupt 0 (8000)
+R1 == 36
+R2 == 9
+R3 == 45 (36 + 9 = 45)
+R4 == 27 (36 - 9 = 27)
+----------------------------------------------------
+
+Test: Multiply and Divide (Integer division with and without a fraction answer)
+----------------------------------------------------
+addimmediate r1 8 (91 08)
+addimmediate r2 21 (92 15)
+multiply r1 r2 r3 (41 23)
+addimmediate r4 72 (94 48)
+addimmediate r5 8 (95 08)
+divide r4 r5 r6 (34 56)
+divide r2 r1 r7 (32 17)
+interrupt 0 (8000)
+R1 == 8
+R2 == 21
+R3 == 168 (8 * 21 = 168)
+R4 == 72
+R5 == 8
+R6 == 9 (72 / 8 = 9)
+R7 == 2 (21 / 8 = 2.625, but with integer division the fraction should be discarded)
+----------------------------------------------------
+
+BITWISE OPERATIONS:
+
+Test: And and Or
+----------------------------------------------------
+addimmediate r1 14 (91 0E)
+addimmediate r2 66 (92 42)
+and r1 r2 r3 (21 23)
+or r1 r2 r4 (61 24)
+interrupt 0 (8000)
+R1 == 14
+R2 == 66
+R3 == 2 (14 = 0000 1110, 66 = 0100 0010, the AND of those is 0000 0010, which is 2)
+R4 == 78  (The OR of the numbers above is 0100 1110, which is 78)
+----------------------------------------------------
+
+Test: LeftShift and RightShift 
+----------------------------------------------------
+addimmediate r1 88 (91 58)
+addimmediate r2 88 (92 58)
+leftshift r1 1 (71 01)
+rightshift r2 4 (72 04) 
+interrupt 0 (8000)
+R1 == 176 (88 = 0101 1000, left shift of 1 is 1011 0000 = 176)
+R2 == 5 (88 = 0101 1000, right shift of 4 is 0000 0101 = 5, with a fraction, which is discarded)
+----------------------------------------------------
+
+MEMORY OPERATIONS:
+
+Test: Load and Store
+----------------------------------------------------
+addimmediate r1 104 (91 68)
+addimmediate r3 35 (93 23)
+addimmediate r4 62 (94 3E)
+store r3 r4 10 (F4 3A) (Stores 35 at address 62 with 10 offset)
+load r2 r4 8 (E2 4 08)
+interrupt 0 (8000)
+interrupt 1 (8001)
+R1 == 104
+R2 == 35 (R1 into R2) 
+R3 == 35
+R4 == 62 (R3 into R4)
+Memory 62: 35
+----------------------------------------------------
+
+Test: Halt
+----------------------------------------------------
+addimmediate r1 6 (91 06)
+halt (0000)
+interrupt 0 (8000)
+Result: While r1 will be 6, nothing is expected to print due to the stop in cpu
+----------------------------------------------------
+
+Test: Jump
+----------------------------------------------------
+addimmediate r1 22 (91 16)
+jump 8 (C0 00 00 04)
+addimmediate r2 27 (92 1B)
+interrupt 0 (8000)
+R1 == 22
+If successful only R1 will be printed as jump will have skipped over the r2 addi
+----------------------------------------------------
+
+Test: Branch if Equal (False and True, respectively)
+----------------------------------------------------
+addimmediate r1 68 (91 44)
+addimmediate r2 68 (92 44)
+addimmediate r3 42 (93 2A)
+branchifequal r1 r3 8 (A1 30 00 08)
+branchifequal r1 r2 6 (A1 20 00 06)
+halt (0000)
+interrupt 0
+R1 == 68
+R2 == 68
+R3 == 42
+It will print all registers if both branchs yield the expected false and true result, otherwise if either one fails, the cpu halts before the interrupt
+-----------------------------------------------------
+
+Test: Branch if Less (False and True, respectively)
+-----------------------------------------------------
+addimmediate r1 35 (91 23)
+addimmediate r2 36 (92 24)
+branchifless r2 r1 8 (A2 10 00 08)
+branchifless r1 r2 6 (A1 20 00 06)
+halt (0000)
+interrupt 0
+R1 == 35
+R2 == 36
+It will print all registers if both branchs yield the expected false and true result, otherwise if either one fails, the cpu halts before the interrupt
+-----------------------------------------------------
+
+Test: Iterate Over
+-----------------------------------------------------
+Given these:
+Address:		Value:
+30			67
+34			53
+38			97
+42			24
+46			0 (null)
+addimmediate r1 30 (91 1E)
+addimmediate r2 67 (92 43)
+addimmediate r3 4 (93 04)
+store r2 r1 0 (F2 10)
+add r1 r3 r1 (11 31)
+subtract r2 r2 r2 (52 22)
+addimmediate r2 53 (92 35)
+store r2 r1 0 (F2 10)
+add r1 r3 r1 (11 31)
+subtract r2 r2 r2 (52 22)
+addimmediate r2 97 (92 61)
+store r2 r1 0 (F2 10)
+add r1 r3 r1 (11 31)
+subtract r2 r2 r2 (52 22)
+addimmediate r2 24 (92 18)
+store r2 r1 0 (F2 10)
+add r1 r3 r1 (11 31)
+subtract r2 r2 r2 (52 22)
+subtract r1 r1 r1 (51 11)
+addimmediate r1 30 (91 1E)
+load r2 r1 0 (E2 1 00)
+interrupt 0 (8000)
+iterateover r1 4 4 (D1 04 00 04)
+R1 == 30
+R2 == 67
+R3 == 4
+R1 == 34
+R2 == 53
+R3 == 4
+R1 == 38
+R2 == 97
+R3 == 4
+R1 == 42
+R2 == 24
+R3 == 4
+-----------------------------------------------------
+
+END OF TESTS
+
+
+
+
+
+
