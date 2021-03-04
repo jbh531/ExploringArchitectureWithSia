@@ -9,11 +9,11 @@ I do not own the SIA documentation which can be found through google search.
 Concepts Covered:
 
 Data Structures: Arrays, Linked List
-Variables and Scope: Strings, characters/integers (in bytecode format as hex), pointers
-Bit operations: Left and right shifting, and/or operations, and masking on the byte level
-File operations: Open and close, reading line by line until EOF found
-Code compilation: Parsing, converting from C abstraction to bytecode and to English output for the user
-Unit Testing: Testing for small parts of functionality, looking for various types of output
-Comments: Functionality of user-created functions and lines included
+- Variables and Scope: Strings, characters/integers (in bytecode format as hex), pointers
+- Bit operations: Left and right shifting, and/or operations, and masking on the byte level
+- File operations: Open and close, reading line by line until EOF found
+- Code compilation: Parsing, converting from C abstraction to bytecode and to English output for the user
+- Unit Testing: Testing for small parts of functionality, looking for various types of output
+- Comments: Functionality of user-created functions and lines included
 
 Demo: https://youtu.be/5IOOZnJHtU0
